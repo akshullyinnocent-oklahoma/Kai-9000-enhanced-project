@@ -18,21 +18,13 @@ jobs:
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
-      - name: Setup JDK
-        uses: actions/setup-java@v4
+      - name: Build and Setup Android
+        uses: ./.github/actions/build-android
         with:
-          distribution: temurin
-          java-version: "21"
-      - name: Set execution flag for gradlew
-        run: chmod +x gradlew
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-      - name: Install Android Build Tools
-        run: |
-          sdkmanager "build-tools;36.0.0"
-          sdkmanager "build-tools;29.0.3"
-      - name: Build APK
-        run: bash ./gradlew :androidApp:assembleFossRelease --stacktrace
+          flavor: 'foss'
+          build-type: 'Release'
+          build-native: 'true'
+          task: ':androidApp:assembleFossRelease'
       - name: Sign APK
         uses: r0adkll/sign-android-release@v1
         with:
@@ -290,21 +282,17 @@ jobs:
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
-      - name: Setup JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
-      - name: Set execution flag for gradlew
-        run: chmod +x gradlew
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
       - name: Decode Play Store keystore
         run: echo "${{ secrets.PLAY_STORE_KEYSTORE_B64 }}" | base64 --decode > /tmp/keystore.jks
       - name: Decode Play Store service account key
         run: echo "${{ secrets.PLAY_STORE_KEY_JSON }}" | base64 --decode > fastlane/play-store-key.json
       - name: Build signed AAB
-        run: ./gradlew :androidApp:bundlePlayStoreRelease --stacktrace
+        uses: ./.github/actions/build-android
+        with:
+          flavor: 'playStore'
+          build-type: 'Release'
+          build-native: 'true'
+          task: ':androidApp:bundlePlayStoreRelease'
         env:
           KEYSTORE_FILE: /tmp/keystore.jks
           KEYSTORE_PASSWORD: ${{ secrets.PLAY_STORE_KEYSTORE_PASSWORD }}

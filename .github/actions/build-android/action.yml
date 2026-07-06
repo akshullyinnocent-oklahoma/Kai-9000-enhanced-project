@@ -1,0 +1,63 @@
+name: 'Build Android'
+description: 'Sets up JDK, Android SDK, and builds the Android app'
+inputs:
+  flavor:
+    description: 'Build flavor (playStore, foss)'
+    required: true
+    default: 'foss'
+  build-type:
+    description: 'Build type (Debug, Release)'
+    required: true
+    default: 'Debug'
+  build-native:
+    description: 'Whether to build native libraries from source'
+    required: false
+    default: 'false'
+  task:
+    description: 'Specific gradle task to run (overrides default assembleFlavorBuildType)'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Cache Gradle dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Set execution flag for gradlew
+      run: chmod +x gradlew
+      shell: bash
+
+    - name: Build Native Libraries
+      if: inputs.build-native == 'true'
+      run: |
+        sdkmanager "build-tools;29.0.3"
+        bash ./build-proot.sh
+      shell: bash
+
+    - name: Run Gradle task
+      run: |
+        if [ -n "${{ inputs.task }}" ]; then
+          ./gradlew ${{ inputs.task }} --no-daemon --stacktrace
+        else
+          # Capitalize first letter of flavor and build-type for task name
+          FLAVOR=$(echo "${{ inputs.flavor }}" | awk '{print toupper(substr($0,1,1))substr($0,2)}')
+          TYPE=$(echo "${{ inputs.build-type }}" | awk '{print toupper(substr($0,1,1))substr($0,2)}')
+          ./gradlew :androidApp:assemble${FLAVOR}${TYPE} --no-daemon --stacktrace
+        fi
+      shell: bash

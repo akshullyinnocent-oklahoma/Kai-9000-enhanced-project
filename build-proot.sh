@@ -14,6 +14,14 @@
 
 set -euo pipefail
 
+# ── Dependency Check ──────────────────────────────────────────────────────────
+for cmd in python3 git curl make; do
+    if ! command -v "$cmd" &> /dev/null; then
+        echo "ERROR: Required command '$cmd' not found. Please install it." >&2
+        exit 1
+    fi
+done
+
 # ── Configuration ──────────────────────────────────────────────────────────────
 PROOT_REPO="https://github.com/termux/proot.git"
 PROOT_COMMIT="4dba3afbf3a63af89b4d9c1a59bf2bda10f4d10f"
