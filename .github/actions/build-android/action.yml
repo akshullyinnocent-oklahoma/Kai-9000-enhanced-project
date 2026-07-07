@@ -2,17 +2,17 @@ name: 'Build Android'
 description: 'Sets up JDK, Android SDK, and builds the Android app'
 inputs:
   flavor:
-    description: 'Build flavor (playStore, foss)'
+    description: 'Build flavor (foss)'
     required: true
     default: 'foss'
   build-type:
-    description: 'Build type (Debug, Release)'
+    description: 'Build type (Debug)'
     required: true
     default: 'Debug'
   build-native:
     description: 'Whether to build native libraries from source'
-    required: false
-    default: 'false'
+    required: true
+    default: 'true'
   task:
     description: 'Specific gradle task to run (overrides default assembleFlavorBuildType)'
     required: false
