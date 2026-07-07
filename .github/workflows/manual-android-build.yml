@@ -1,0 +1,47 @@
+name: Android Debug APK
+
+on:
+  push:
+    branches:
+      - main
+      - fix/armv7a-build-compat
+  workflow_dispatch:
+    inputs:
+      build_native:
+        description: 'Build native libraries from source'
+        type: boolean
+        default: true
+
+jobs:
+  build:
+    name: Build armv7a Debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build and Setup Android
+        uses: ./.github/actions/build-android
+        with:
+          flavor: 'foss'
+          build-type: 'Debug'
+          build-native: ${{ github.event.inputs.build_native || 'true' }}
+          task: ':androidApp:assembleFossDebug'
+
+      - name: Verify armv7a libraries
+        run: |
+          APK_PATH=$(find androidApp/build/outputs/apk/foss/debug -name "*.apk" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            echo "ERROR: APK not found"
+            exit 1
+          fi
+          echo "Verifying $APK_PATH"
+          unzip -l "$APK_PATH" | grep "lib/armeabi-v7a/"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-foss-debug-apk
+          path: androidApp/build/outputs/apk/foss/debug/*.apk

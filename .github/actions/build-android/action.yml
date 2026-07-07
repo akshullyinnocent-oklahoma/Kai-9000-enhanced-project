@@ -1,18 +1,23 @@
 name: 'Build Android'
+author: 'Inspired Android'
 description: 'Sets up JDK, Android SDK, and builds the Android app'
+branding:
+  icon: 'package'
+  color: 'green'
+
 inputs:
   flavor:
-    description: 'Build flavor (foss)'
+    description: 'Build flavor (playStore, foss)'
     required: true
     default: 'foss'
   build-type:
-    description: 'Build type (Debug)'
+    description: 'Build type (Debug, Release)'
     required: true
     default: 'Debug'
   build-native:
     description: 'Whether to build native libraries from source'
-    required: true
-    default: 'true'
+    required: false
+    default: 'false'
   task:
     description: 'Specific gradle task to run (overrides default assembleFlavorBuildType)'
     required: false
