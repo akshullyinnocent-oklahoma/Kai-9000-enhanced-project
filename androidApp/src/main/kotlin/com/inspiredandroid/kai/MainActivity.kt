@@ -31,6 +31,37 @@ import io.github.vinceglb.filekit.dialogs.init
 import nl.marc_apps.tts.TextToSpeechEngine
 import nl.marc_apps.tts.rememberTextToSpeechOrNull
 import org.koin.android.ext.android.get
+import android.os.Bundle
+import android.os.Environment
+import androidx.activity.ComponentActivity
+import java.io.File
+
+class MainActivity : ComponentActivity() {
+    
+    // Path to a folder your proot Ubuntu terminal can easily see
+    private val publicSyncDir = File(Environment.getExternalStorageDirectory(), "Documents/Kai_Sandbox")
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        importFromPublic() // Sync IN when app starts
+    }
+
+    override fun onStop() {
+        super.onStop()
+        exportToPublic() // Sync OUT when app goes to background
+    }
+
+    private fun importFromPublic() {
+        if (publicSyncDir.exists()) {
+            publicSyncDir.copyRecursively(filesDir, overwrite = true)
+        }
+    }
+
+    private fun exportToPublic() {
+        if (!publicSyncDir.exists()) publicSyncDir.mkdirs()
+        filesDir.copyRecursively(publicSyncDir, overwrite = true)
+    }
+}
 
 class MainActivity : ComponentActivity() {
 
